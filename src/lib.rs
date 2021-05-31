@@ -1,6 +1,6 @@
 use std::{fs, io};
 use std::collections::HashMap;
-use arrow::array::Array;
+use arrow::array::ArrayRef;
 use pyo3::{
 	exceptions::PyOSError,
 	ffi::Py_uintptr_t,
@@ -17,7 +17,7 @@ fn to_py_via_json<T: serde::Serialize>(py: Python, json: &PyModule, x: &T) -> Re
 	)?.to_object(py))
 }
 
-fn to_py_via_arrow<T: Array>(py: Python, pyarrow: &PyModule, arr: &T) -> Result<PyObject, PyO3ArrowError> {
+fn to_py_via_arrow(py: Python, pyarrow: &PyModule, arr: ArrayRef) -> Result<PyObject, PyO3ArrowError> {
 	let (array_pointer, schema_pointer) = arr.to_raw()?;
 	Ok(pyarrow.getattr("Array")?.call_method1("_import_from_c",
 		(array_pointer as Py_uintptr_t, schema_pointer as Py_uintptr_t),
@@ -34,10 +34,7 @@ fn _game(py: Python, path: String) -> Result<PyObject, PyO3ArrowError> {
 	m.insert("start", to_py_via_json(py, json, &game.start)?);
 	m.insert("end", to_py_via_json(py, json, &game.end)?);
 	m.insert("metadata", to_py_via_json(py, json, &game.metadata)?);
-	m.insert("frames", to_py_via_arrow(py, &pyarrow, &peppi::arrow::frames(&game)?)?);
-	if let Some(items) = &peppi::arrow::items(&game)? {
-		m.insert("items", to_py_via_arrow(py, &pyarrow, items)?);
-	}
+	m.insert("frames", to_py_via_arrow(py, &pyarrow, peppi::arrow::frames(&game, None))?);
 
 	Ok(m.to_object(py))
 }

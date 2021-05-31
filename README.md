@@ -16,9 +16,8 @@ There is only one function, `peppi_py.game(path)`, which parses a replay file an
 - `start`
 - `end`
 - `frames`
-- `items`
 
-The first three are regular dicts, but `frames` and `items` are Arrow `StructArray` objects. These can be accessed as though they were arrays of dicts, but thanks to their columnar format you can do many other things such as convert them to numpy arrays. See the [pyarrow docs](https://arrow.apache.org/docs/python/) for more, particularly [StructArray](https://arrow.apache.org/docs/python/generated/pyarrow.StructArray.html) and [StructScalar](https://arrow.apache.org/docs/python/generated/pyarrow.StructScalar.html) (which is what you get when you subscript a `StructArray`).
+The first three are regular dicts, but `frames` is an Arrow `StructArray` object. This can be treated as an array of dicts, but thanks to Arrow's columnar format you can do many other things such as convert columns to numpy arrays. See the [pyarrow docs](https://arrow.apache.org/docs/python/) for more, particularly [StructArray](https://arrow.apache.org/docs/python/generated/pyarrow.StructArray.html) and [StructScalar](https://arrow.apache.org/docs/python/generated/pyarrow.StructScalar.html) (which is what you get when you subscript a `StructArray`).
 
 Also see the [Slippi replay spec](https://github.com/project-slippi/slippi-wiki/blob/master/SPEC.md) for detailed information about the available fields and their meanings.
 
