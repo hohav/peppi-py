@@ -21,6 +21,8 @@ The first three are regular dicts, but `frames` is an Arrow `StructArray` object
 
 Also see the [Slippi replay spec](https://github.com/project-slippi/slippi-wiki/blob/master/SPEC.md) for detailed information about the available fields and their meanings.
 
+**⚠️ peppi-py is still alpha, so expect breaking changes!**
+
 ```python
 >>> import peppi_py
 >>> game = peppi_py.game("game.slp")
