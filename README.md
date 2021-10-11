@@ -25,11 +25,13 @@ Also see the [Slippi replay spec](https://github.com/project-slippi/slippi-wiki/
 >>> import peppi_py
 >>> game = peppi_py.game("game.slp")
 >>> game['metadata']
-{'date': '2018-06-22T07:52:59Z',
- 'duration': 5209,
- 'platform': 'dolphin',
- 'players': [{'characters': {'18': 5209}, 'port': 'P1'},
-             {'characters': {'1': 5209}, 'port': 'P2'}]}
+{'lastFrame': 11238,
+ 'playedOn': 'dolphin',
+ 'players': {'0': {'characters': {'18': 11469},
+                   'names': {'code': 'AAAA#123', 'netplay': 'abbott'}},
+             '1': {'characters': {'17': 11469},
+                   'names': {'code': 'BBBB#456', 'netplay': 'costello'}}},
+ 'startAt': '2020-08-01T19:41:19Z'}
 >>> f = game['frames'][0]
 >>> f['ports']['0']['leader']['post']['position']
 <pyarrow.StructScalar: {'x': -42.0, 'y': 26.600000381469727}>

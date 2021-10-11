@@ -33,7 +33,7 @@ fn _game(py: Python, path: String) -> Result<PyObject, PyO3ArrowError> {
 
 	m.insert("start", to_py_via_json(py, json, &game.start)?);
 	m.insert("end", to_py_via_json(py, json, &game.end)?);
-	m.insert("metadata", to_py_via_json(py, json, &game.metadata)?);
+	m.insert("metadata", to_py_via_json(py, json, &game.metadata_raw)?);
 	m.insert("frames", to_py_via_arrow(py, &pyarrow, peppi::serde::arrow::frames_to_arrow(&game, None))?);
 
 	Ok(m.to_object(py))
