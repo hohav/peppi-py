@@ -5,7 +5,7 @@ Python bindings for the [peppi](https://github.com/hohav/peppi) replay parser fo
 ## Installation
 
 ```python
-pip install peppi_py
+pip install peppi-py
 ```
 
 ## Usage
