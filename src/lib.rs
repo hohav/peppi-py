@@ -8,6 +8,8 @@ use pyo3::{
 	wrap_pyfunction,
 };
 
+use peppi::serde::{collect, de};
+
 mod error;
 use error::PyO3ArrowError;
 
@@ -24,26 +26,31 @@ fn to_py_via_arrow(py: Python, pyarrow: &PyModule, arr: StructArray) -> Result<P
 	)?.to_object(py))
 }
 
-fn _game(py: Python, path: String) -> Result<PyObject, PyO3ArrowError> {
+fn _game(py: Python, path: String, parse_opts: de::Opts, collect_opts: collect::Opts) -> Result<PyObject, PyO3ArrowError> {
 	let pyarrow = py.import("pyarrow")?;
 	let json = py.import("json")?;
-	let game = peppi::game(&mut io::BufReader::new(fs::File::open(path)?), None, None)?;
+	let game = peppi::game(
+		&mut io::BufReader::new(fs::File::open(path)?),
+		Some(parse_opts),
+		Some(collect_opts),
+	)?;
 
 	let mut m: HashMap<&str, PyObject> = HashMap::new();
 
 	m.insert("start", to_py_via_json(py, json, &game.start)?);
 	m.insert("end", to_py_via_json(py, json, &game.end)?);
 	m.insert("metadata", to_py_via_json(py, json, &game.metadata_raw)?);
-	m.insert("frames", to_py_via_arrow(py, &pyarrow, peppi::serde::arrow::frames_to_arrow(&game, None))?);
+	if !parse_opts.skip_frames {
+		m.insert("frames", to_py_via_arrow(py, &pyarrow, peppi::serde::arrow::frames_to_arrow(&game, None))?);
+	}
 
 	Ok(m.to_object(py))
 }
 
-#[pyfunction]
-fn game(py: Python, path: String) -> PyResult<PyObject> {
-	_game(py, path).map_err(|e|
-		PyOSError::new_err(e.to_string())
-	)
+#[pyfunction(skip_frames = "false", rollbacks = "false")]
+fn game(py: Python, path: String, skip_frames: bool, rollbacks: bool) -> PyResult<PyObject> {
+	_game(py, path, de::Opts { skip_frames }, collect::Opts { rollbacks })
+		.map_err(|e| PyOSError::new_err(e.to_string()))
 }
 
 #[pymodule]
