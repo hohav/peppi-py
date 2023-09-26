@@ -2,10 +2,31 @@
 
 Python bindings for the [peppi](https://github.com/hohav/peppi) replay parser for Slippi, built using [Apache Arrow](https://arrow.apache.org/) and [PyO3](https://pyo3.rs/).
 
-## Installation
+## Installation from PyPI
+
+Only python 3.9 + Intel (Macos and Linux) are supported.
 
 ```sh
 pip install peppi-py
+```
+
+## Installation from Source
+
+First make sure rust is installed. For example, on Ubuntu:
+```sh
+sudo snap install rustup
+rustup install stable
+```
+
+Now build the wheel and install it:
+```sh
+# peppi-py doesn't work with newer versions of maturin
+pip install "maturin<0.14"
+
+# Run the next two commands from peppi-py root
+maturin build [-r]
+# The exact name will depend on your system, e.g. peppi_py-0.4.3-cp39-abi3-manylinux_2_28_x86_64.whl
+pip install target/wheels/…
 ```
 
 ## Usage
