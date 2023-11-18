@@ -1,7 +1,7 @@
 [package]
 authors = ["melkor <hohav@fastmail.com>"]
 name = "peppi-py"
-version = "0.4.3"
+version = "0.5.0"
 edition = "2021"
 
 [lib]
@@ -9,14 +9,11 @@ name = "peppi_py"
 crate-type = ["cdylib"]
 
 [dependencies]
-arrow = "6.3"
-peppi = "1.0.0-alpha.6"
-pyo3 = { version = "0.15", features = ["abi3-py39", "extension-module"] }
+arrow2 = "0.18"
+peppi = "2.0.0-alpha.2"
+pyo3 = { version = "0.20", features = ["abi3-py39", "extension-module"] }
 serde = "1.0"
 serde_json = "1.0"
-
-[package.metadata.maturin]
-requires-dist = ["pyarrow~=6.0"]
 
 [profile.release]
 opt-level = 3

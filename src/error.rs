@@ -1,10 +1,9 @@
 use std::{error, fmt, io};
-use arrow::error::ArrowError;
 use pyo3::prelude::PyErr;
 
 #[derive(Debug)]
 pub enum PyO3ArrowError {
-	ArrowError(ArrowError),
+	ArrowError(arrow2::error::Error),
 	IoError(io::Error),
 	PeppiError(peppi::ParseError),
 	PythonError(PyErr),
@@ -37,8 +36,8 @@ impl error::Error for PyO3ArrowError {
 	}
 }
 
-impl From<ArrowError> for PyO3ArrowError {
-	fn from(err: ArrowError) -> PyO3ArrowError {
+impl From<arrow2::error::Error> for PyO3ArrowError {
+	fn from(err: arrow2::error::Error) -> PyO3ArrowError {
 		PyO3ArrowError::ArrowError(err)
 	}
 }

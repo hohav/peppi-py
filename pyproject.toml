@@ -1,0 +1,3 @@
+[build-system]
+build-backend = "maturin"
+requires = ["pyarrow~=14.0"]

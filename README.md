@@ -35,6 +35,6 @@ Also see the [Slippi replay spec](https://github.com/project-slippi/slippi-wiki/
                    'names': {'code': 'BBBB#456', 'netplay': 'costello'}}},
  'startAt': '2020-08-01T19:41:19Z'}
 >>> f = game['frames'][0]
->>> f['ports']['0']['leader']['post']['position']
+>>> f['ports'][0]['leader']['post']['position']
 <pyarrow.StructScalar: {'x': -42.0, 'y': 26.600000381469727}>
 ```
