@@ -12,8 +12,8 @@ pip install peppi-py
 
 There are two functions in `peppi_py`:
 
-- `read_slippi(path, skip_frames = True)`
-- `read_peppi(path, skip_frames = True)`
+- `read_slippi(path, skip_frames=False)`
+- `read_peppi(path, skip_frames=False)`
 
 Both of these parse a replay file (`.slp` or `.slpp` respectively), and return an object with these attributes:
 
