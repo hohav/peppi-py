@@ -1,7 +1,7 @@
 [package]
 authors = ["melkor <hohav@fastmail.com>"]
 name = "peppi-py"
-version = "0.5.0"
+version = "0.6.0"
 edition = "2021"
 
 [lib]
@@ -10,7 +10,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 arrow2 = "0.18"
-peppi = "2.0.0-alpha.2"
+peppi = "2.0.0-alpha.3"
 pyo3 = { version = "0.20", features = ["abi3-py39", "extension-module"] }
 serde = "1.0"
 serde_json = "1.0"

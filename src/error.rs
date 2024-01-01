@@ -1,11 +1,12 @@
-use std::{error, fmt, io};
+use peppi::io::Error as PeppiError;
 use pyo3::prelude::PyErr;
+use std::{error, fmt, io};
 
 #[derive(Debug)]
 pub enum PyO3ArrowError {
 	ArrowError(arrow2::error::Error),
 	IoError(io::Error),
-	PeppiError(peppi::ParseError),
+	PeppiError(PeppiError),
 	PythonError(PyErr),
 	JsonError(serde_json::Error),
 }
@@ -54,8 +55,8 @@ impl From<PyErr> for PyO3ArrowError {
 	}
 }
 
-impl From<peppi::ParseError> for PyO3ArrowError {
-	fn from(err: peppi::ParseError) -> PyO3ArrowError {
+impl From<PeppiError> for PyO3ArrowError {
+	fn from(err: PeppiError) -> PyO3ArrowError {
 		PyO3ArrowError::PeppiError(err)
 	}
 }
@@ -65,4 +66,3 @@ impl From<serde_json::Error> for PyO3ArrowError {
 		PyO3ArrowError::JsonError(err)
 	}
 }
-
