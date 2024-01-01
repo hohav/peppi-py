@@ -15,7 +15,7 @@ There are two functions in `peppi_py`:
 - `read_slippi(path, skip_frames = True)`
 - `read_peppi(path, skip_frames = True)`
 
-Both of these parse a replay file (`.slp` or `.slpp` respectively), and return an object with these keys:
+Both of these parse a replay file (`.slp` or `.slpp` respectively), and return an object with these attributes:
 
 - `start`
 - `end`
