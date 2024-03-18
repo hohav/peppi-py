@@ -6,7 +6,8 @@ build:
     rust: "1.75"
   commands:
     - pip install maturin
-    - maturin develop
+    - maturin build
+    - pip install target/wheels/peppi_py-0.7.0*.whl
 
 sphinx:
   configuration: docs/conf.py
