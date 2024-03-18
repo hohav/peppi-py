@@ -15,7 +15,7 @@ author = 'melkor'
 
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode',
+    'sphinx.ext.linkcode',
 ]
 
 templates_path = ['_templates']
@@ -28,3 +28,13 @@ language = 'en'
 
 html_theme = 'alabaster'
 html_static_path = ['_static']
+
+def linkcode_resolve(domain, info):
+    if domain != 'py':
+        return None
+    if not (module := info['module']):
+        return None
+    filename = module.replace('.', '/')
+    if module == 'peppi_py':
+        filename += '/__init__'
+    return f'https://github.com/hohav/peppi-py/blob/main/{filename}.py'
