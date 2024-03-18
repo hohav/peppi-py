@@ -5,9 +5,10 @@ build:
     python: "3.12"
     rust: "1.75"
   commands:
-    - pip install maturin
-    - maturin build
-    - pip install target/wheels/peppi_py-0.7.0*.whl
+    - python -mvirtualenv $READTHEDOCS_VIRTUALENV_PATH
+    - python -m pip install --upgrade --no-cache-dir pip setuptools sphinx readthedocs-sphinx-ext maturin
+    - maturin develop
+    - python -m sphinx -T -b html -d _build/doctrees -D language=en . $READTHEDOCS_OUTPUT/html
 
 sphinx:
   configuration: docs/conf.py
