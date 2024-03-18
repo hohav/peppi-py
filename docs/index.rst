@@ -1,10 +1,10 @@
-Welcome to peppi-py's documentation!
-====================================
+peppi-py API docs
+=================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 4
 
+   source/peppi_py
 
 
 Indices and tables
