@@ -1,5 +1,11 @@
 use arrow2::array::{Array, StructArray};
-use pyo3::{exceptions::PyOSError, ffi::Py_uintptr_t, prelude::*, wrap_pyfunction, PyCell};
+use pyo3::{
+	exceptions::PyOSError,
+	ffi::Py_uintptr_t,
+	prelude::*,
+	types::PyDict,
+	wrap_pyfunction,
+};
 use std::{fs, io};
 
 use peppi::frame::PortOccupancy;
@@ -10,14 +16,13 @@ use peppi::io::slippi::de::Opts as SlippiOpts;
 mod error;
 use error::PyO3ArrowError;
 
-fn to_py_via_json<T: serde::Serialize>(
-	py: Python,
+fn to_py_via_json<'a, T: serde::Serialize>(
 	json: &PyModule,
 	x: &T,
-) -> Result<PyObject, PyO3ArrowError> {
+) -> Result<Py<PyDict>, PyO3ArrowError> {
 	Ok(json
 		.call_method1("loads", (serde_json::to_string(x)?,))?
-		.to_object(py))
+		.extract()?)
 }
 
 fn to_py_via_arrow(
@@ -41,11 +46,11 @@ fn to_py_via_arrow(
 
 #[pyclass(get_all, set_all)]
 pub struct Game {
-	pub start: PyObject,
-	pub end: PyObject,
-	pub metadata: PyObject,
-	pub frames: Option<PyObject>,
+	pub start: Py<PyDict>,
+	pub end: Py<PyDict>,
+	pub metadata: Py<PyDict>,
 	pub hash: Option<String>,
+	pub frames: Option<PyObject>,
 }
 
 fn port_occupancy(start: &Start) -> Vec<PortOccupancy> {
@@ -71,12 +76,13 @@ fn _read_slippi(
 		Some(&parse_opts),
 	)?;
 
+	println!("{:?}", game.hash);
 	Ok(PyCell::new(
 		py,
 		Game {
-			start: to_py_via_json(py, json, &game.start)?,
-			end: to_py_via_json(py, json, &game.end)?,
-			metadata: to_py_via_json(py, json, &game.metadata)?,
+			start: to_py_via_json(json, &game.start)?,
+			end: to_py_via_json(json, &game.end)?,
+			metadata: to_py_via_json(json, &game.metadata)?,
 			hash: game.hash,
 			frames: match parse_opts.skip_frames {
 				true => None,
@@ -106,9 +112,9 @@ fn _read_peppi(
 	Ok(PyCell::new(
 		py,
 		Game {
-			start: to_py_via_json(py, json, &game.start)?,
-			end: to_py_via_json(py, json, &game.end)?,
-			metadata: to_py_via_json(py, json, &game.metadata)?,
+			start: to_py_via_json(json, &game.start)?,
+			end: to_py_via_json(json, &game.end)?,
+			metadata: to_py_via_json(json, &game.metadata)?,
 			hash: game.hash,
 			frames: match parse_opts.skip_frames {
 				true => None,
@@ -152,6 +158,7 @@ fn read_peppi(py: Python, path: String, skip_frames: bool) -> PyResult<&PyCell<G
 }
 
 #[pymodule]
+#[pyo3(name = "_peppi")]
 fn peppi_py(_py: Python, m: &PyModule) -> PyResult<()> {
 	m.add_class::<Game>()?;
 	m.add_function(wrap_pyfunction!(read_slippi, m)?)?;
