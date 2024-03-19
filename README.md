@@ -1,5 +1,8 @@
 # peppi-py
 
+[![](https://img.shields.io/pypi/v/peppi-py)](https://pypi.org/project/peppi-py/)
+[![](https://img.shields.io/readthedocs/peppi-py)](https://peppi-py.readthedocs.io/en/latest/)
+
 Python bindings for the [peppi](https://github.com/hohav/peppi) Slippi replay parser, built using [Apache Arrow](https://arrow.apache.org/) and [PyO3](https://pyo3.rs/).
 
 ## Installation
@@ -15,7 +18,7 @@ peppi-py exposes two functions:
 - `read_slippi(path, skip_frames=False)`
 - `read_peppi(path, skip_frames=False)`
 
-Both of these parse a replay file (`.slp` or `.slpp` respectively) into a `Game` object.
+Both of these parse a replay file (`.slp` or `.slpp` respectively) into a [Game](https://peppi-py.readthedocs.io/en/latest/source/peppi_py.game.html#peppi_py.game.Game) object.
 
 Frame data is stored as a [struct-of-arrays](https://en.wikipedia.org/wiki/AoS_and_SoA) for performance, using [Arrow](https://arrow.apache.org/). So to get the value of an attribute "foo.bar" for the `n`th frame of the game, you'd write `game.frames.foo.bar[n]` instead of `game.frames[n].foo.bar`. See the code example below.
 
