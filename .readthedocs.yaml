@@ -7,8 +7,7 @@ build:
   commands:
     - python -mvirtualenv $READTHEDOCS_VIRTUALENV_PATH
     - python -m pip install --upgrade --no-cache-dir pip setuptools sphinx readthedocs-sphinx-ext maturin
-    - maturin build
-    - python -m pip install --no-cache-dir target/wheels/peppi_py-*.whl
+    - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH maturin develop
     - cd docs && python -m sphinx -T -b html -d _build/doctrees -D language=en . $READTHEDOCS_OUTPUT/html
 
 sphinx:
