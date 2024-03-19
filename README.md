@@ -11,6 +11,13 @@ Python bindings for the [peppi](https://github.com/hohav/peppi) Slippi replay pa
 pip install peppi-py
 ```
 
+To build from source instead, first install [Rust](https://rustup.rs/). Then:
+
+```sh
+pip install maturin
+maturin develop
+```
+
 ## Usage
 
 peppi-py exposes two functions:
