@@ -1,0 +1,123 @@
+name: Python
+on:
+  push:
+    branches:
+      - main
+      - ci-test
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+jobs:
+  macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        target: [arm64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+          architecture: arm64
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: universal2-apple-darwin
+          args: --release --out dist --sdist
+      - name: Install wheels
+        run: |
+          pip install dist/peppi_py-*.whl --force-reinstall
+          python -c "import peppi_py"
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ github.job }}-${{ matrix.target }}
+          path: dist
+  windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        target: [x64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+          architecture: ${{ matrix.target }}
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --out dist
+      - name: Install wheels
+        shell: bash
+        run: |
+          python -m pip install -U pip
+          pip install dist/peppi_py-*.whl --force-reinstall
+          python -c "import peppi_py"
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ github.job }}-${{ matrix.target }}
+          path: dist
+  linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [x86_64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+          architecture: x64
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          manylinux: auto
+          args: --release --out dist
+      - name: Install wheels
+        run: |
+          pip install dist/peppi_py-*.whl --force-reinstall
+          python -c "import peppi_py"
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ github.job }}-${{ matrix.target }}
+          path: dist
+  linux-cross:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [aarch64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          manylinux: auto
+          args: --release --out dist
+      - uses: uraimo/run-on-arch-action@v2.7.2
+        name: Install wheels
+        with:
+          arch: ${{ matrix.target }}
+          distro: ubuntu22.04
+          githubToken: ${{ github.token }}
+          install: |
+            apt-get update
+            apt-get install -y --no-install-recommends python3 python3-pip python3-dev make cmake clang
+            pip3 install -U pip
+          run: |
+            pip3 install dist/peppi_py-*.whl --force-reinstall
+            python3 -c "import peppi_py"
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ github.job }}-${{ matrix.target }}
+          path: dist
