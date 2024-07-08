@@ -16,8 +16,8 @@ use peppi::io::slippi::de::Opts as SlippiOpts;
 mod error;
 use error::PyO3ArrowError;
 
-fn to_py_via_json<'a, T: serde::Serialize>(
-	json: &PyModule,
+fn to_py_via_json<T: serde::Serialize>(
+	json: &Bound<PyModule>,
 	x: &T,
 ) -> Result<Py<PyDict>, PyO3ArrowError> {
 	Ok(json
@@ -27,7 +27,7 @@ fn to_py_via_json<'a, T: serde::Serialize>(
 
 fn to_py_via_arrow(
 	py: Python,
-	pyarrow: &PyModule,
+	pyarrow: &Bound<PyModule>,
 	arr: StructArray,
 ) -> Result<PyObject, PyO3ArrowError> {
 	let data_type = arr.data_type().clone();
@@ -68,21 +68,21 @@ fn _read_slippi(
 	py: Python,
 	path: String,
 	parse_opts: SlippiOpts,
-) -> Result<&PyCell<Game>, PyO3ArrowError> {
-	let pyarrow = py.import("pyarrow")?;
-	let json = py.import("json")?;
+) -> Result<Bound<Game>, PyO3ArrowError> {
+	let pyarrow = py.import_bound("pyarrow")?;
+	let json = py.import_bound("json")?;
 	let game = peppi::io::slippi::read(
 		&mut io::BufReader::new(fs::File::open(path)?),
 		Some(&parse_opts),
 	)?;
 
 	println!("{:?}", game.hash);
-	Ok(PyCell::new(
+	Ok(Bound::new(
 		py,
 		Game {
-			start: to_py_via_json(json, &game.start)?,
-			end: to_py_via_json(json, &game.end)?,
-			metadata: to_py_via_json(json, &game.metadata)?,
+			start: to_py_via_json(&json, &game.start)?,
+			end: to_py_via_json(&json, &game.end)?,
+			metadata: to_py_via_json(&json, &game.metadata)?,
 			hash: game.hash,
 			frames: match parse_opts.skip_frames {
 				true => None,
@@ -101,20 +101,20 @@ fn _read_peppi(
 	py: Python,
 	path: String,
 	parse_opts: PeppiOpts,
-) -> Result<&PyCell<Game>, PyO3ArrowError> {
-	let pyarrow = py.import("pyarrow")?;
-	let json = py.import("json")?;
+) -> Result<Bound<Game>, PyO3ArrowError> {
+	let pyarrow = py.import_bound("pyarrow")?;
+	let json = py.import_bound("json")?;
 	let game = peppi::io::peppi::read(
 		&mut io::BufReader::new(fs::File::open(path)?),
 		Some(&parse_opts),
 	)?;
 
-	Ok(PyCell::new(
+	Ok(Bound::new(
 		py,
 		Game {
-			start: to_py_via_json(json, &game.start)?,
-			end: to_py_via_json(json, &game.end)?,
-			metadata: to_py_via_json(json, &game.metadata)?,
+			start: to_py_via_json(&json, &game.start)?,
+			end: to_py_via_json(&json, &game.end)?,
+			metadata: to_py_via_json(&json, &game.metadata)?,
 			hash: game.hash,
 			frames: match parse_opts.skip_frames {
 				true => None,
@@ -131,7 +131,7 @@ fn _read_peppi(
 
 #[pyfunction]
 #[pyo3(signature = (path, skip_frames = false))]
-fn read_slippi(py: Python, path: String, skip_frames: bool) -> PyResult<&PyCell<Game>> {
+fn read_slippi(py: Python, path: String, skip_frames: bool) -> PyResult<Bound<Game>> {
 	_read_slippi(
 		py,
 		path,
@@ -145,7 +145,7 @@ fn read_slippi(py: Python, path: String, skip_frames: bool) -> PyResult<&PyCell<
 
 #[pyfunction]
 #[pyo3(signature = (path, skip_frames = false))]
-fn read_peppi(py: Python, path: String, skip_frames: bool) -> PyResult<&PyCell<Game>> {
+fn read_peppi(py: Python, path: String, skip_frames: bool) -> PyResult<Bound<Game>> {
 	_read_peppi(
 		py,
 		path,
@@ -159,7 +159,7 @@ fn read_peppi(py: Python, path: String, skip_frames: bool) -> PyResult<&PyCell<G
 
 #[pymodule]
 #[pyo3(name = "_peppi")]
-fn peppi_py(_py: Python, m: &PyModule) -> PyResult<()> {
+fn peppi_py(m: &Bound<PyModule>) -> PyResult<()> {
 	m.add_class::<Game>()?;
 	m.add_function(wrap_pyfunction!(read_slippi, m)?)?;
 	m.add_function(wrap_pyfunction!(read_peppi, m)?)?;
