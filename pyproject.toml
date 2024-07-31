@@ -10,6 +10,7 @@ build-backend = "maturin"
 requires = ["pyarrow~=15.0"]
 
 [tool.maturin]
+python-source = "python"
 module-name = "peppi_py._peppi"
 
 [pytest]
