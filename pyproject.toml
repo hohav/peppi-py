@@ -1,13 +1,13 @@
 [project]
 name = "peppi-py"
 dependencies = [
-	"pyarrow~=15.0",
+	"pyarrow~=17.0",
 	"inflection~=0.5",
 ]
 
 [build-system]
 build-backend = "maturin"
-requires = ["pyarrow~=15.0"]
+requires = ["pyarrow~=17.0"]
 
 [tool.maturin]
 python-source = "python"
