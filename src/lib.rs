@@ -76,7 +76,6 @@ fn _read_slippi(
 		Some(&parse_opts),
 	)?;
 
-	println!("{:?}", game.hash);
 	Ok(Bound::new(
 		py,
 		Game {
