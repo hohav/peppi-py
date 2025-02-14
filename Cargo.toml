@@ -14,6 +14,7 @@ peppi = "2.0"
 pyo3 = { version = "0.22", features = ["abi3-py39", "extension-module"] }
 serde = "1.0"
 serde_json = "1.0"
+byteorder = "1.5"
 
 [profile.release]
 opt-level = 3

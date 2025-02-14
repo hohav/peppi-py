@@ -1,5 +1,6 @@
 [project]
 name = "peppi-py"
+version = "1.1"
 dependencies = [
 	"pyarrow~=17.0",
 	"inflection~=0.5",
