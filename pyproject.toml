@@ -1,5 +1,6 @@
 [project]
 name = "peppi-py"
+requires-python = ">= 3.10"
 dependencies = [
 	"pyarrow~=17.0",
 	"inflection~=0.5",
