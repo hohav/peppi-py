@@ -1,17 +1,11 @@
 use arrow2::array::{Array, StructArray};
-use pyo3::{
-	exceptions::PyOSError,
-	ffi::Py_uintptr_t,
-	prelude::*,
-	types::PyDict,
-	wrap_pyfunction,
-};
+use pyo3::{exceptions::PyOSError, ffi::Py_uintptr_t, prelude::*, types::PyDict, wrap_pyfunction};
 use std::{fs, io};
 
 use peppi::frame::PortOccupancy;
 use peppi::game::{Start, ICE_CLIMBERS};
-use peppi::io::peppi::de::Opts as PeppiOpts;
-use peppi::io::slippi::de::Opts as SlippiOpts;
+use peppi::io::peppi::de::Opts as PeppiReadOpts;
+use peppi::io::slippi::de::Opts as SlippiReadOpts;
 
 mod error;
 use error::PyO3ArrowError;
@@ -25,11 +19,10 @@ fn to_py_via_json<T: serde::Serialize>(
 		.extract()?)
 }
 
-fn to_py_via_arrow(
-	py: Python,
-	pyarrow: &Bound<PyModule>,
+fn to_py_via_arrow<'py>(
+	pyarrow: &Bound<'py, PyModule>,
 	arr: StructArray,
-) -> Result<PyObject, PyO3ArrowError> {
+) -> Result<Bound<'py, PyAny>, PyO3ArrowError> {
 	let data_type = arr.data_type().clone();
 	let array_ptr = &arrow2::ffi::export_array_to_c(arr.boxed()) as *const _;
 	let schema_ptr =
@@ -41,7 +34,8 @@ fn to_py_via_arrow(
 			"_import_from_c",
 			(array_ptr as Py_uintptr_t, schema_ptr as Py_uintptr_t),
 		)?
-		.to_object(py))
+		.into_pyobject(pyarrow.py())
+		.unwrap())
 }
 
 #[pyclass(get_all, set_all)]
@@ -67,10 +61,10 @@ fn port_occupancy(start: &Start) -> Vec<PortOccupancy> {
 fn _read_slippi(
 	py: Python,
 	path: String,
-	parse_opts: SlippiOpts,
+	parse_opts: SlippiReadOpts,
 ) -> Result<Bound<Game>, PyO3ArrowError> {
-	let pyarrow = py.import_bound("pyarrow")?;
-	let json = py.import_bound("json")?;
+	let pyarrow = py.import("pyarrow")?;
+	let json = py.import("json")?;
 	let game = peppi::io::slippi::read(
 		&mut io::BufReader::new(fs::File::open(path)?),
 		Some(&parse_opts),
@@ -85,12 +79,16 @@ fn _read_slippi(
 			hash: game.hash,
 			frames: match parse_opts.skip_frames {
 				true => None,
-				_ => Some(to_py_via_arrow(
-					py,
-					&pyarrow,
-					game.frames
-						.into_struct_array(game.start.slippi.version, &port_occupancy(&game.start)),
-				)?),
+				_ => Some(
+					to_py_via_arrow(
+						&pyarrow,
+						game.frames.into_struct_array(
+							game.start.slippi.version,
+							&port_occupancy(&game.start),
+						),
+					)?
+					.into(),
+				),
 			},
 		},
 	)?)
@@ -99,10 +97,10 @@ fn _read_slippi(
 fn _read_peppi(
 	py: Python,
 	path: String,
-	parse_opts: PeppiOpts,
+	parse_opts: PeppiReadOpts,
 ) -> Result<Bound<Game>, PyO3ArrowError> {
-	let pyarrow = py.import_bound("pyarrow")?;
-	let json = py.import_bound("json")?;
+	let pyarrow = py.import("pyarrow")?;
+	let json = py.import("json")?;
 	let game = peppi::io::peppi::read(
 		&mut io::BufReader::new(fs::File::open(path)?),
 		Some(&parse_opts),
@@ -117,12 +115,16 @@ fn _read_peppi(
 			hash: game.hash,
 			frames: match parse_opts.skip_frames {
 				true => None,
-				_ => Some(to_py_via_arrow(
-					py,
-					&pyarrow,
-					game.frames
-						.into_struct_array(game.start.slippi.version, &port_occupancy(&game.start)),
-				)?),
+				_ => Some(
+					to_py_via_arrow(
+						&pyarrow,
+						game.frames.into_struct_array(
+							game.start.slippi.version,
+							&port_occupancy(&game.start),
+						),
+					)?
+					.into(),
+				),
 			},
 		},
 	)?)
@@ -134,7 +136,7 @@ fn read_slippi(py: Python, path: String, skip_frames: bool) -> PyResult<Bound<Ga
 	_read_slippi(
 		py,
 		path,
-		SlippiOpts {
+		SlippiReadOpts {
 			skip_frames,
 			..Default::default()
 		},
@@ -148,7 +150,7 @@ fn read_peppi(py: Python, path: String, skip_frames: bool) -> PyResult<Bound<Gam
 	_read_peppi(
 		py,
 		path,
-		PeppiOpts {
+		PeppiReadOpts {
 			skip_frames,
 			..Default::default()
 		},
