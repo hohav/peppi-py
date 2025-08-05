@@ -13,7 +13,7 @@ use error::PyO3ArrowError;
 fn to_py_via_json<T: serde::Serialize>(
 	json: &Bound<PyModule>,
 	x: &T,
-) -> Result<Py<PyDict>, PyO3ArrowError> {
+) -> Result<Option<Py<PyDict>>, PyO3ArrowError> {
 	Ok(json
 		.call_method1("loads", (serde_json::to_string(x)?,))?
 		.extract()?)
@@ -41,8 +41,8 @@ fn to_py_via_arrow<'py>(
 #[pyclass(get_all, set_all)]
 pub struct Game {
 	pub start: Py<PyDict>,
-	pub end: Py<PyDict>,
-	pub metadata: Py<PyDict>,
+	pub end: Option<Py<PyDict>>,
+	pub metadata: Option<Py<PyDict>>,
 	pub hash: Option<String>,
 	pub frames: Option<PyObject>,
 }
@@ -73,7 +73,7 @@ fn _read_slippi(
 	Ok(Bound::new(
 		py,
 		Game {
-			start: to_py_via_json(&json, &game.start)?,
+			start: to_py_via_json(&json, &game.start)?.ok_or("missing game start")?,
 			end: to_py_via_json(&json, &game.end)?,
 			metadata: to_py_via_json(&json, &game.metadata)?,
 			hash: game.hash,
@@ -109,7 +109,7 @@ fn _read_peppi(
 	Ok(Bound::new(
 		py,
 		Game {
-			start: to_py_via_json(&json, &game.start)?,
+			start: to_py_via_json(&json, &game.start)?.ok_or("missing game start")?,
 			end: to_py_via_json(&json, &game.end)?,
 			metadata: to_py_via_json(&json, &game.metadata)?,
 			hash: game.hash,

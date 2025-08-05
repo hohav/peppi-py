@@ -6,8 +6,8 @@ from .parse import dc_from_json, frames_from_sa
 
 def read_peppi(path: str, skip_frames: bool=False) -> Game:
 	g = _read_peppi(path, skip_frames)
-	return Game(dc_from_json(Start, g.start), dc_from_json(End, g.end), g.metadata, frames_from_sa(g.frames))
+	return Game(dc_from_json(Start, g.start), g.end and dc_from_json(End, g.end), g.metadata, frames_from_sa(g.frames))
 
 def read_slippi(path: str, skip_frames: bool=False) -> Game:
 	g = _read_slippi(path, skip_frames)
-	return Game(dc_from_json(Start, g.start), dc_from_json(End, g.end), g.metadata, frames_from_sa(g.frames))
+	return Game(dc_from_json(Start, g.start), g.end and dc_from_json(End, g.end), g.metadata, frames_from_sa(g.frames))
