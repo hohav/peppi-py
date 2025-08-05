@@ -3,13 +3,13 @@ name = "peppi-py"
 dynamic = ["version"]
 requires-python = ">= 3.10"
 dependencies = [
-	"pyarrow~=17.0",
+	"pyarrow~=21.0",
 	"inflection~=0.5",
 ]
 
 [build-system]
 build-backend = "maturin"
-requires = ["maturin>=1.0,<2.0", "pyarrow~=17.0"]
+requires = ["maturin>=1.0,<2.0", "pyarrow~=21.0"]
 
 [tool.maturin]
 python-source = "python"
