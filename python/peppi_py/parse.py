@@ -1,9 +1,9 @@
-import sys, types, typing
+import types, typing
 import pyarrow
 import dataclasses as dc
 from inflection import underscore
 from enum import Enum
-from .frame import Data, Frame, PortData
+from .frame import Data, Frame, PortData, Item
 
 def _repr(x):
 	if isinstance(x, pyarrow.Array):
@@ -64,7 +64,16 @@ def frames_from_sa(arrow_frames):
 		try: follower = dc_from_sa(Data, port.field('follower'))
 		except KeyError: follower = None
 		ports.append(PortData(leader, follower))
-	return Frame(arrow_frames.field('id'), tuple(ports))
+
+	# Extract items if available
+	items = None
+	try:
+		items_array = arrow_frames.field('item')
+		items = [dc_from_sa(Item, item.values) for item in items_array]
+	except KeyError:
+		pass
+
+	return Frame(arrow_frames.field('id'), tuple(ports), items)
 
 def field_from_json(cls, json):
 	if json is None:
