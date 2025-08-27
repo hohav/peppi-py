@@ -3,22 +3,8 @@ import pyarrow
 import dataclasses as dc
 from inflection import underscore
 from enum import Enum
-from .frame import Data, Frame, PortData
-
-def _repr(x):
-	if isinstance(x, pyarrow.Array):
-		s = ', '.join(repr(v.as_py()) for v in x[:3])
-		if len(x) > 3:
-			s += ', ...'
-		return f'[{s}]'
-	elif isinstance(x, tuple):
-		s = ', '.join(_repr(v) for v in x)
-		return f'({s})'
-	elif dc.is_dataclass(x):
-		s = ', '.join(f'{f.name}={_repr(getattr(x, f.name))}' for f in dc.fields(type(x)))
-		return f'{type(x).__name__}({s})'
-	else:
-		return repr(x)
+from .frame import Data, Frame, Item, PortData
+from .util import _repr, ListArray
 
 def unwrap_union(cls):
 	if typing.get_origin(cls) is types.UnionType:
@@ -64,7 +50,11 @@ def frames_from_sa(arrow_frames):
 		try: follower = dc_from_sa(Data, port.field('follower'))
 		except KeyError: follower = None
 		ports.append(PortData(leader, follower))
-	return Frame(arrow_frames.field('id'), tuple(ports))
+	try:
+		i = arrow_frames.field('item')
+		items = ListArray(dc_from_sa(Item, i.values), i.offsets)
+	except KeyError: items = None
+	return Frame(arrow_frames.field('id'), tuple(ports), items)
 
 def field_from_json(cls, json):
 	if json is None:

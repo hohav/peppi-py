@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pyarrow.lib import Int8Array, Int16Array, Int32Array, Int64Array, UInt8Array, UInt16Array, UInt32Array, UInt64Array, FloatArray, DoubleArray
-from .util import _repr
+from .util import _repr, ListArray
 
 @dataclass(slots=True)
 class End:
@@ -113,3 +113,4 @@ class Frame:
 	__repr__ = _repr
 	id: object
 	ports: tuple[PortData]
+	item: ListArray[Item] | None = None

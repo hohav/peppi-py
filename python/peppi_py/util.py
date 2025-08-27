@@ -1,8 +1,8 @@
-import pyarrow
 import dataclasses as dc
+import pyarrow as pa
 
 def _repr(x):
-	if isinstance(x, pyarrow.Array):
+	if isinstance(x, pa.Array):
 		s = ', '.join(repr(v.as_py()) for v in x[:3])
 		if len(x) > 3:
 			s += ', ...'
@@ -15,3 +15,9 @@ def _repr(x):
 		return f'{type(x).__name__}({s})'
 	else:
 		return repr(x)
+
+@dc.dataclass(slots=True)
+class ListArray[T]:
+	__repr__ = _repr
+	values: T
+	offsets: pa.Int32Array
