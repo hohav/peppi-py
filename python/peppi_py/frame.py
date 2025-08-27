@@ -119,4 +119,4 @@ class Frame:
 	__repr__ = _repr
 	id: object
 	ports: tuple[PortData]
-	items: list[Item] | None = None
+	items: Item | None = None

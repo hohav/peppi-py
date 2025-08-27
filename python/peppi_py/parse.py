@@ -1,9 +1,12 @@
 import types, typing
 import pyarrow
 import dataclasses as dc
+import functools
 from inflection import underscore
 from enum import Enum
 from .frame import Data, Frame, PortData, Item
+
+T = typing.TypeVar('T')
 
 def _repr(x):
 	if isinstance(x, pyarrow.Array):
@@ -20,24 +23,30 @@ def _repr(x):
 	else:
 		return repr(x)
 
+get_origin = functools.cache(typing.get_origin)
+is_dataclass = functools.cache(dc.is_dataclass)
+dc_fields = functools.cache(dc.fields)
+get_args = functools.cache(typing.get_args)
+
+@functools.cache
 def unwrap_union(cls):
-	if typing.get_origin(cls) is types.UnionType:
-		return typing.get_args(cls)[0]
+	if get_origin(cls) is types.UnionType:
+		return get_args(cls)[0]
 	else:
 		return cls
 
-def field_from_sa(cls, arr):
+def field_from_sa(cls: type[T], arr: pyarrow.Array | None) -> T | pyarrow.Array | None:
 	if arr is None:
 		return None
 	cls = unwrap_union(cls)
-	if dc.is_dataclass(cls):
+	if is_dataclass(cls):
 		return dc_from_sa(cls, arr)
-	elif typing.get_origin(cls) is tuple:
+	elif get_origin(cls) is tuple:
 		return tuple_from_sa(cls, arr)
 	else:
 		return arr
 
-def arr_field(arr, dc_field):
+def arr_field(arr, dc_field: dc.Field):
 	try:
 		return arr.field(dc_field.name)
 	except KeyError:
@@ -46,13 +55,57 @@ def arr_field(arr, dc_field):
 		else:
 			return dc_field.default
 
-def dc_from_sa(cls, arr):
-	return cls(*(field_from_sa(f.type, arr_field(arr, f)) for f in dc.fields(cls)))
+def dc_from_sa(cls: type[T], arr: pyarrow.StructArray) -> T:
+	return cls(*(field_from_sa(f.type, arr_field(arr, f)) for f in dc_fields(cls)))
 
-def tuple_from_sa(cls, arr):
-	return tuple((field_from_sa(t, arr.field(str(idx))) for (idx, t) in enumerate(typing.get_args(cls))))
+def tuple_from_sa(cls: type[tuple], arr: pyarrow.Array) -> tuple:
+	return cls((field_from_sa(t, arr.field(str(idx))) for (idx, t) in enumerate(get_args(cls))))
 
-def frames_from_sa(arrow_frames):
+@functools.cache
+def unwrap_optional(cls: type) -> type | None:
+	if get_origin(cls) is not types.UnionType:
+		return cls
+
+	args = get_args(cls)
+	assert len(args) == 2
+	assert args[1] is types.NoneType
+	return args[0]
+
+# Generic recursion on dataclasses
+def map_dc(cls: type[T], fn: typing.Callable, *xs: T) -> T:
+	unwrapped_cls = unwrap_optional(cls)
+	if unwrapped_cls is not None:
+		# Optional fields might be missing; if so, don't recurse.
+		for x in xs:
+			if x is None:
+				return None
+		cls = unwrapped_cls
+
+	if is_dataclass(cls):
+		return cls(*(
+				map_dc(f.type, fn, *(getattr(x, f.name) for x in xs))
+				for f in dc_fields(cls)
+		))
+	elif get_origin(cls) is tuple:
+		return cls(
+				map_dc(t, fn, *(x[idx] for x in xs))
+				for (idx, t) in enumerate(get_args(cls))
+		)
+	else:
+		return fn(*xs)
+
+def dc_from_la(cls: type[T], la: pyarrow.ListArray) -> T:
+	"""Converts ListArray of Structs into dataclass of ListArrays."""
+	dc_sa = dc_from_sa(cls, la.values)
+	return map_dc(cls, lambda arr: pyarrow.ListArray.from_arrays(la.offsets, arr), dc_sa)
+
+
+class RollbackMode(Enum):
+	ALL = 'all'  # All frames in the replay.
+	FIRST = 'first'  # Only the first frame, as seen by the player
+	LAST = 'last'  # Only the finalized frames; the "true" frame sequence.
+
+def frames_from_sa(arrow_frames) -> typing.Optional[Frame]:
 	if arrow_frames is None:
 		return None
 	ports = []
@@ -69,7 +122,7 @@ def frames_from_sa(arrow_frames):
 	items = None
 	try:
 		items_array = arrow_frames.field('item')
-		items = [dc_from_sa(Item, item.values) for item in items_array]
+		items = dc_from_la(Item, items_array)
 	except KeyError:
 		pass
 
