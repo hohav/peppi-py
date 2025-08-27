@@ -113,3 +113,5 @@ class Frame:
 	__repr__ = _repr
 	id: object
 	ports: tuple[PortData]
+	items: Item | None = None
+	item_offsets: Int32Array | None = None

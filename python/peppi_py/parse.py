@@ -3,7 +3,7 @@ import pyarrow
 import dataclasses as dc
 from inflection import underscore
 from enum import Enum
-from .frame import Data, Frame, PortData
+from .frame import Data, Frame, Item, PortData
 
 def _repr(x):
 	if isinstance(x, pyarrow.Array):
@@ -64,7 +64,12 @@ def frames_from_sa(arrow_frames):
 		try: follower = dc_from_sa(Data, port.field('follower'))
 		except KeyError: follower = None
 		ports.append(PortData(leader, follower))
-	return Frame(arrow_frames.field('id'), tuple(ports))
+	try:
+		item_list = arrow_frames.field('item')
+		items = dc_from_sa(Item, item_list.values)
+		item_offsets = item_list.offsets
+	except KeyError: pass
+	return Frame(arrow_frames.field('id'), tuple(ports), items, item_offsets)
 
 def field_from_json(cls, json):
 	if json is None:
