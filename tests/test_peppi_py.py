@@ -1,5 +1,8 @@
-from math import isclose
+from collections import Counter
 from pathlib import Path
+
+import pytest
+
 from peppi_py import read_slippi, read_peppi
 from peppi_py.game import *
 
@@ -92,3 +95,18 @@ def test_basic_game():
 	assert p1.position.y[1000].as_py() == -18.6373291015625
 	assert p2.position.x[1000].as_py() == 42.195167541503906
 	assert p2.position.y[1000].as_py() == 9.287015914916992
+
+def test_items_support():
+	# Replay with a Peach
+	game = read_slippi(Path(__file__).parent.joinpath('data/items.slp').as_posix())
+	assert game.frames is not None
+	assert game.frames.items is not None
+
+	item_types = Counter(game.frames.items.type.values.to_numpy())
+
+	# Peach turnip appears on 513 frames.
+	assert len(item_types) == 1
+	assert item_types[99] == 513
+
+if __name__ == '__main__':
+	pytest.main([__file__])  # Uncomment to run with pytest
