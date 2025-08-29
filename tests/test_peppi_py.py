@@ -98,11 +98,11 @@ def test_basic_game():
 
 def test_items_support():
 	# Replay with a Peach
-	game = read_slippi('../peppi/tests/data/items.slp')
+	game = read_slippi(Path(__file__).parent.joinpath('data/items.slp').as_posix())
+	assert game.frames is not None
+	assert game.frames.items is not None
 
-	item_types = Counter()
-	for items in game.frames.items:
-		item_types.update(items.type.to_pylist())
+	item_types = Counter(game.frames.items.type.values.to_numpy())
 
 	# Peach turnip appears on 513 frames.
 	assert len(item_types) == 1
