@@ -44,7 +44,7 @@ pub struct Game {
 	pub end: Option<Py<PyDict>>,
 	pub metadata: Option<Py<PyDict>>,
 	pub hash: Option<String>,
-	pub frames: Option<PyObject>,
+	pub frames: Option<Py<PyAny>>,
 }
 
 fn port_occupancy(start: &Start) -> Vec<PortOccupancy> {
