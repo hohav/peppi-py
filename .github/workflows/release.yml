@@ -92,7 +92,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.13
+          python-version: 3.12
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -105,13 +105,9 @@ jobs:
           arch: ${{ matrix.target }}
           distro: ubuntu24.04
           githubToken: ${{ github.token }}
-          install: |
-            apt-get update
-            apt-get install -y --no-install-recommends python3 python3-pip python3-dev make cmake clang
-            pip3 install -U pip
           run: |
-            pip3 install dist/peppi_py-*.whl --force-reinstall
-            python3 -c "import peppi_py"
+            pip install dist/peppi_py-*.whl --force-reinstall
+            python -c "import peppi_py"
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
