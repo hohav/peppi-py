@@ -1,5 +1,10 @@
 from dataclasses import dataclass
-from pyarrow.lib import Int8Array, Int16Array, Int32Array, Int64Array, UInt8Array, UInt16Array, UInt32Array, UInt64Array, FloatArray, DoubleArray
+from pyarrow.lib import (
+	Int8Array, Int16Array, Int32Array, Int64Array,
+	UInt8Array, UInt16Array, UInt32Array, UInt64Array,
+	FloatArray, DoubleArray,
+	ListArray,
+)
 from .util import _repr
 
 @dataclass(slots=True)
@@ -53,6 +58,7 @@ class Item:
 	id: UInt32Array
 	misc: tuple[UInt8Array, UInt8Array, UInt8Array, UInt8Array] | None = None
 	owner: Int8Array | None = None
+	instance_id: UInt16Array | None = None
 
 @dataclass(slots=True)
 class Post:
@@ -113,3 +119,4 @@ class Frame:
 	__repr__ = _repr
 	id: object
 	ports: tuple[PortData]
+	items: Item | None = None
