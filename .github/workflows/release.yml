@@ -99,19 +99,19 @@ jobs:
           target: ${{ matrix.target }}
           manylinux: auto
           args: --release -i python3.10 --out dist
-      - uses: uraimo/run-on-arch-action@v3
-        name: Install wheels
-        with:
-          arch: ${{ matrix.target }}
-          distro: ubuntu24.04
-          githubToken: ${{ github.token }}
-          install: |
-            apt-get update
-            apt-get install -y --no-install-recommends python3 python3-pip python3-dev make cmake clang
-            pip3 install -U pip
-          run: |
-            pip3 install dist/peppi_py-*.whl --force-reinstall
-            python3 -c "import peppi_py"
+      #- uses: uraimo/run-on-arch-action@v3
+      #  name: Install wheels
+      #  with:
+      #    arch: ${{ matrix.target }}
+      #    distro: ubuntu24.04
+      #    githubToken: ${{ github.token }}
+      #    install: |
+      #      apt-get update
+      #      apt-get install -y --no-install-recommends python3 python3-pip python3-dev make cmake clang
+      #      pip3 install -U pip
+      #    run: |
+      #      pip3 install dist/peppi_py-*.whl --force-reinstall
+      #      python3 -c "import peppi_py"
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
