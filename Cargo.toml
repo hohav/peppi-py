@@ -2,7 +2,7 @@
 authors = ["melkor <hohav@fastmail.com>"]
 name = "peppi-py"
 version = "0.8.2"
-edition = "2021"
+edition = "2024"
 
 [lib]
 name = "peppi_py"
