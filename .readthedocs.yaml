@@ -1,14 +1,13 @@
 version: 2
 build:
-  os: ubuntu-22.04
+  os: ubuntu-24.04
   tools:
-    python: "3.12"
-    rust: "1.75"
+    python: "3.10"
+    rust: latest
   commands:
     - python -mvirtualenv $READTHEDOCS_VIRTUALENV_PATH
     - python -m pip install --upgrade --no-cache-dir pip setuptools sphinx readthedocs-sphinx-ext maturin
     - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH maturin develop
     - cd docs && python -m sphinx -T -b html -d _build/doctrees -D language=en . $READTHEDOCS_OUTPUT/html
-
 sphinx:
   configuration: docs/conf.py
